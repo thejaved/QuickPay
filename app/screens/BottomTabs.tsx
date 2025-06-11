@@ -3,7 +3,6 @@ import {
   View,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
   Animated,
   Platform,
 } from 'react-native';
@@ -12,6 +11,12 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import LinearGradient from 'react-native-linear-gradient';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {
+  responsiveWidth,
+  responsiveHeight,
+  responsiveFontSize,
+} from 'react-native-responsive-dimensions';
+
 import colors from '../config/colors';
 import DashboardScreen from './DashboardScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -27,9 +32,9 @@ type BottomTabsNavProp = NativeStackNavigationProp<
   'Dashboard'
 >;
 
-const {width} = Dimensions.get('window');
-const TAB_BAR_HEIGHT = 80;
-const SCAN_BUTTON_SIZE = 70;
+const TAB_BAR_HEIGHT = responsiveHeight(8);
+const SCAN_BUTTON_SIZE = responsiveWidth(18);
+const SCREEN_WIDTH = responsiveWidth(100);
 
 const TABS = ['Dashboard', 'Scan', 'Profile'] as const;
 type Tab = (typeof TABS)[number];
@@ -61,7 +66,6 @@ const BottomTabs: FC = () => {
         useNativeDriver: true,
       }),
     ]).start();
-    // setSelected('Scan');
     navigation.navigate('Scan');
   };
 
@@ -96,7 +100,11 @@ const BottomTabs: FC = () => {
                   ]}>
                   <TouchableOpacity onPress={onPressScan} activeOpacity={0.8}>
                     <View style={styles.scanButton}>
-                      <Icon name={name} size={32} color={colors.white} />
+                      <Icon
+                        name={name}
+                        size={responsiveFontSize(4)}
+                        color={colors.white}
+                      />
                     </View>
                   </TouchableOpacity>
                 </Animated.View>
@@ -104,19 +112,17 @@ const BottomTabs: FC = () => {
             }
 
             const focused = selected === tab;
-            const onPress = () => {
-              setSelected(tab);
-            };
-
             return (
               <TouchableOpacity
                 key={tab}
                 style={styles.tabButton}
-                onPress={onPress}
+                onPress={() => setSelected(tab)}
                 activeOpacity={0.7}>
                 <Icon
                   name={name}
-                  size={focused ? 28 : 24}
+                  size={
+                    focused ? responsiveFontSize(3.5) : responsiveFontSize(3)
+                  }
                   color={focused ? colors.primary : '#aaa'}
                 />
               </TouchableOpacity>
@@ -143,7 +149,7 @@ const styles = StyleSheet.create({
   tabBarContainer: {
     position: 'absolute',
     bottom: 0,
-    width,
+    width: SCREEN_WIDTH,
     height: TAB_BAR_HEIGHT,
   },
   tabBar: {
@@ -160,7 +166,7 @@ const styles = StyleSheet.create({
   scanWrapper: {
     position: 'absolute',
     top: -SCAN_BUTTON_SIZE / 2,
-    left: (width - SCAN_BUTTON_SIZE) / 2,
+    left: responsiveWidth((100 - 18) / 2),
     zIndex: 10,
   },
   scanButton: {
@@ -177,9 +183,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 4,
       },
-      android: {
-        elevation: 8,
-      },
+      android: {elevation: 8},
     }),
   },
 });

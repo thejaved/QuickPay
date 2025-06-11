@@ -4,19 +4,25 @@ import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
   TouchableOpacity,
   Animated,
+  StatusBar,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Svg, {Path} from 'react-native-svg';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {
+  responsiveWidth,
+  responsiveHeight,
+  responsiveFontSize,
+} from 'react-native-responsive-dimensions';
+
 import colors from '../config/colors';
 import fonts from '../config/fonts';
 
-const {width} = Dimensions.get('window');
-const HEADER_HEIGHT = 100;
-const CURVE_HEIGHT = 30;
+const HEADER_HEIGHT = responsiveHeight(12.5);
+const CURVE_HEIGHT = responsiveHeight(4);
+const WIDTH = responsiveWidth(100);
 
 export interface HeaderProps {
   title: string;
@@ -68,7 +74,7 @@ const Header: FC<HeaderProps> = ({
               <TouchableOpacity onPress={onBack} style={styles.iconButton}>
                 <MaterialIcons
                   name="arrow-back"
-                  size={24}
+                  size={responsiveHeight(3)}
                   color={colors.white}
                 />
               </TouchableOpacity>
@@ -87,7 +93,7 @@ const Header: FC<HeaderProps> = ({
                 style={styles.iconButton}>
                 <MaterialIcons
                   name="notifications"
-                  size={24}
+                  size={responsiveHeight(3)}
                   color={colors.white}
                 />
               </TouchableOpacity>
@@ -99,17 +105,17 @@ const Header: FC<HeaderProps> = ({
       </AnimatedGradient>
 
       <Svg
-        width={width}
+        width={WIDTH}
         height={CURVE_HEIGHT}
-        viewBox={`0 0 ${width} ${CURVE_HEIGHT}`}
+        viewBox={`0 0 ${WIDTH} ${CURVE_HEIGHT}`}
         style={styles.curve}>
         <Path
           d={`
             M0,0
-            C${width * 0.5},${CURVE_HEIGHT * 1.5} ${
-            width * 0.5
-          },${-CURVE_HEIGHT} ${width},0
-            L${width},${CURVE_HEIGHT} L0,${CURVE_HEIGHT} Z
+            C${WIDTH * 0.5},${CURVE_HEIGHT * 1.5} ${
+            WIDTH * 0.5
+          },${-CURVE_HEIGHT} ${WIDTH},0
+            L${WIDTH},${CURVE_HEIGHT} L0,${CURVE_HEIGHT} Z
           `}
           fill={colors.bg}
         />
@@ -123,7 +129,7 @@ export default Header;
 const styles = StyleSheet.create({
   wrapper: {backgroundColor: 'transparent'},
   gradient: {
-    width,
+    width: WIDTH,
     height: HEADER_HEIGHT + CURVE_HEIGHT / 2,
     elevation: 4,
     shadowColor: '#000',
@@ -136,21 +142,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: HEADER_HEIGHT,
-    paddingHorizontal: 16,
+    paddingHorizontal: responsiveWidth(4),
     justifyContent: 'space-between',
   },
-  iconButton: {padding: 8},
-  iconPlaceholder: {width: 40},
-  textGroup: {flex: 1, alignItems: 'center'},
+  iconButton: {padding: responsiveWidth(2)},
+  iconPlaceholder: {width: responsiveWidth(10)},
+  textGroup: {flex: 1, alignItems: 'center', marginTop: responsiveHeight(2)},
   title: {
-    fontSize: 22,
+    fontSize: responsiveFontSize(2.5),
     color: colors.white,
     fontFamily: fonts.medium,
   },
   subtitle: {
-    marginTop: 4,
+    marginTop: responsiveHeight(1),
     color: colors.white,
-    fontSize: 14,
+    fontSize: responsiveFontSize(1.5),
     opacity: 0.9,
     fontFamily: fonts.regular,
   },

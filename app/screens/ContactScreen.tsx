@@ -1,4 +1,3 @@
-// screens/ContactScreen.tsx
 import React, {FC, useEffect, useRef, useState, useCallback} from 'react';
 import {
   View,
@@ -6,7 +5,6 @@ import {
   StyleSheet,
   FlatList,
   Modal,
-  Dimensions,
   SafeAreaView,
   Animated,
   TouchableOpacity,
@@ -19,21 +17,27 @@ import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import {
+  responsiveWidth,
+  responsiveHeight,
+  responsiveFontSize,
+} from 'react-native-responsive-dimensions';
+
 import colors from '../config/colors';
 import Header from '../components/Header';
 import ContactCard, {Contact} from '../components/ContactCard';
 
+// Navigation stack params
 type RootStackParamList = {
   ContactScreen: undefined;
   PayScreen: {contact: Contact};
 };
 type NavProp = NativeStackNavigationProp<RootStackParamList, 'ContactScreen'>;
 
-const {width, height} = Dimensions.get('window');
-const FAB_SIZE = 56;
-const CARD_WIDTH = width * 0.9;
+const FAB_SIZE = responsiveWidth(14);
+const CARD_WIDTH = responsiveWidth(90);
 
-// Define your form fields once
+// Form fields definition
 const fields: Array<{
   key: keyof Omit<Contact, 'id'>;
   label: string;
@@ -99,14 +103,14 @@ const ContactScreen: FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const bounce = useRef(new Animated.Value(1)).current;
 
-  // Load
+  // Load contacts on mount
   useEffect(() => {
     AsyncStorage.getItem('contacts')
       .then(str => str && setContacts(JSON.parse(str)))
       .catch(() => {});
   }, []);
 
-  // Persist
+  // Persist contacts on change
   useEffect(() => {
     AsyncStorage.setItem('contacts', JSON.stringify(contacts)).catch(() => {});
   }, [contacts]);
@@ -136,8 +140,12 @@ const ContactScreen: FC = () => {
     ({item}: {item: Contact}) => (
       <ContactCard
         contact={item}
-        onPay={contact => navigation.navigate('PayScreen', {contact})}
-        style={{width: CARD_WIDTH, alignSelf: 'center', marginVertical: 8}}
+        onPay={c => navigation.navigate('PayScreen', {contact: c})}
+        style={{
+          width: CARD_WIDTH,
+          alignSelf: 'center',
+          marginVertical: responsiveHeight(1),
+        }}
       />
     ),
     [navigation],
@@ -160,7 +168,7 @@ const ContactScreen: FC = () => {
 
       <Animated.View style={[styles.fab, {transform: [{scale: bounce}]}]}>
         <TouchableOpacity onPress={toggleModal}>
-          <AntDesign name="plus" size={24} color="#fff" />
+          <AntDesign name="plus" size={responsiveFontSize(3)} color="#fff" />
         </TouchableOpacity>
       </Animated.View>
 
@@ -182,14 +190,22 @@ export default ContactScreen;
 
 const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: colors.bg},
-  listContent: {paddingVertical: 16, paddingBottom: FAB_SIZE + 32},
-  separator: {height: 12},
-  empty: {textAlign: 'center', marginTop: 32, color: '#888'},
+  listContent: {
+    paddingVertical: responsiveHeight(2),
+    paddingBottom: FAB_SIZE + responsiveHeight(4),
+  },
+  separator: {height: responsiveHeight(1.5)},
+  empty: {
+    textAlign: 'center',
+    marginTop: responsiveHeight(4),
+    color: '#888',
+    fontSize: responsiveFontSize(2),
+  },
 
   fab: {
     position: 'absolute',
-    bottom: 32,
-    right: 32,
+    bottom: responsiveHeight(4),
+    right: responsiveWidth(6),
     width: FAB_SIZE,
     height: FAB_SIZE,
     borderRadius: FAB_SIZE / 2,
@@ -206,42 +222,54 @@ const styles = StyleSheet.create({
   modalWrapper: {
     position: 'absolute',
     bottom: 0,
-    width,
-    maxHeight: height * 0.75,
+    width: responsiveWidth(100),
+    maxHeight: responsiveHeight(75),
     backgroundColor: colors.white,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderTopLeftRadius: responsiveWidth(4),
+    borderTopRightRadius: responsiveWidth(4),
   },
   modalScroll: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 24,
+    paddingHorizontal: responsiveWidth(6),
+    paddingTop: responsiveHeight(1.5),
+    paddingBottom: responsiveHeight(3),
   },
 
   formContainer: {},
   handle: {
-    width: 40,
-    height: 5,
-    borderRadius: 2.5,
+    width: responsiveWidth(10),
+    height: responsiveHeight(0.75),
+    borderRadius: responsiveHeight(0.375),
     backgroundColor: '#ccc',
     alignSelf: 'center',
-    marginBottom: 12,
+    marginBottom: responsiveHeight(1.5),
   },
-  formTitle: {fontSize: 18, fontWeight: '600', marginBottom: 16},
-  inputGroup: {marginBottom: 12},
-  inputLabel: {fontSize: 14, marginBottom: 4, color: colors.primaryDark},
+  formTitle: {
+    fontSize: responsiveFontSize(2.5),
+    fontWeight: '600',
+    marginBottom: responsiveHeight(2),
+  },
+  inputGroup: {marginBottom: responsiveHeight(1.5)},
+  inputLabel: {
+    fontSize: responsiveFontSize(2),
+    marginBottom: responsiveHeight(0.5),
+    color: colors.primaryDark,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: responsiveWidth(2),
+    padding: responsiveWidth(3),
     backgroundColor: '#fafafa',
   },
   formActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 16,
+    marginTop: responsiveHeight(2),
   },
-  cancelText: {fontSize: 16, color: '#888', marginRight: 24},
-  saveText: {fontSize: 16, color: colors.primary},
+  cancelText: {
+    fontSize: responsiveFontSize(2.25),
+    color: '#888',
+    marginRight: responsiveWidth(6),
+  },
+  saveText: {fontSize: responsiveFontSize(2.25), color: colors.primary},
 });

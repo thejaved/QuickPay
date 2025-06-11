@@ -1,5 +1,4 @@
 import React, {FC, useCallback, useState, useRef} from 'react';
-
 import {useFocusEffect} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StyleSheet, StatusBar, Animated} from 'react-native';
@@ -107,5 +106,8 @@ export default DashboardScreen;
 
 const styles = StyleSheet.create({
   container: {flex: 1},
-  scrollContent: {alignItems: 'center', paddingBottom: 40},
+  scrollContent: {
+    alignItems: 'center',
+    paddingBottom: responsiveHeight(5),
+  },
 });

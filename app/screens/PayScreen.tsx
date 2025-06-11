@@ -1,5 +1,4 @@
-// screens/PayScreen.tsx
-import React, {FC, useState, useRef} from 'react';
+import React, {FC, useState, useRef, useMemo} from 'react';
 import {
   View,
   Text,
@@ -7,16 +6,21 @@ import {
   SafeAreaView,
   TextInput,
   TouchableOpacity,
-  Dimensions,
   Animated,
   Alert,
   Platform,
 } from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import LinearGradient from 'react-native-linear-gradient';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {
+  responsiveWidth,
+  responsiveHeight,
+  responsiveFontSize,
+} from 'react-native-responsive-dimensions';
+
 import colors from '../config/colors';
+import fonts from '../config/fonts';
 import Header from '../components/Header';
 
 export interface Contact {
@@ -34,27 +38,44 @@ type RootStackParamList = {
   ContactScreen: undefined;
   PayScreen: {contact: Contact};
 };
-
 type Props = NativeStackScreenProps<RootStackParamList, 'PayScreen'>;
 
-const {width} = Dimensions.get('window');
-const AVATAR_SIZE = 80;
+const AVATAR_SIZE = responsiveWidth(18);
+const ICON_SIZE = responsiveFontSize(2.5);
+
+const methods = ['Bank', 'UPI'] as const;
+
+type Method = (typeof methods)[number];
+
+const FieldRow: FC<{icon: string; children: React.ReactNode; style?: any}> = ({
+  icon,
+  children,
+  style,
+}) => (
+  <View style={[styles.inputRow, style]}>
+    <MaterialIcons name={icon} size={ICON_SIZE} color={colors.primary} />
+    {children}
+  </View>
+);
 
 const PayScreen: FC<Props> = ({route, navigation}) => {
   const {contact} = route.params;
-  const [method, setMethod] = useState<'Bank' | 'UPI'>('Bank');
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [method, setMethod] = useState<Method>('Bank');
+  const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
-  const btnScale = useRef(new Animated.Value(1)).current;
+  const scale = useRef(new Animated.Value(1)).current;
 
-  const onPressIn = () =>
-    Animated.spring(btnScale, {toValue: 0.95, useNativeDriver: true}).start();
-  const onPressOut = () =>
-    Animated.spring(btnScale, {
-      toValue: 1,
-      friction: 3,
+  const initials = useMemo(
+    () => contact.name.match(/\b\w/g)?.slice(0, 2).join('').toUpperCase(),
+    [contact.name],
+  );
+
+  const animate = (toValue: number) =>
+    Animated.spring(scale, {
+      toValue,
       useNativeDriver: true,
+      friction: 3,
     }).start();
 
   const handlePay = () => {
@@ -63,18 +84,10 @@ const PayScreen: FC<Props> = ({route, navigation}) => {
     navigation.goBack();
   };
 
-  const initials = contact.name
-    .split(' ')
-    .map(p => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-
   return (
     <SafeAreaView style={styles.container}>
       <Header title="Pay Contact" onBack={() => navigation.goBack()} />
-
-      <View style={styles.profileCard}>
+      <View style={styles.profile}>
         <View style={styles.avatar}>
           <Text style={styles.initials}>{initials}</Text>
         </View>
@@ -83,86 +96,67 @@ const PayScreen: FC<Props> = ({route, navigation}) => {
       </View>
 
       <View style={styles.form}>
-        {/* Method selector */}
-        <View style={styles.dropdownWrapper}>
-          <TouchableOpacity
-            style={[styles.inputRow, styles.dropdownInput]}
-            onPress={() => setDropdownOpen(o => !o)}
-            activeOpacity={0.8}>
-            <Text style={styles.inputText}>{method}</Text>
-            <MaterialIcons
-              name={dropdownOpen ? 'arrow-drop-up' : 'arrow-drop-down'}
-              size={24}
-              color="#666"
-            />
-          </TouchableOpacity>
-          {dropdownOpen && (
-            <View style={styles.dropdownMenu}>
-              {['Bank', 'UPI'].map(m => (
-                <TouchableOpacity
-                  key={m}
-                  style={[styles.inputRow, styles.dropdownItem]}
-                  onPress={() => {
-                    setMethod(m as any);
-                    setDropdownOpen(false);
-                  }}
-                  activeOpacity={0.8}>
-                  <Text style={styles.inputText}>{m}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
+        <TouchableOpacity
+          onPress={() => setOpen(o => !o)}
+          activeOpacity={0.8}
+          style={styles.dropdown}>
+          <Text style={styles.dropdownText}>{method}</Text>
+          <MaterialIcons
+            name={open ? 'arrow-drop-up' : 'arrow-drop-down'}
+            size={ICON_SIZE}
+            color="#666"
+          />
+        </TouchableOpacity>
+        {open && (
+          <View style={styles.menu}>
+            {methods.map(m => (
+              <TouchableOpacity
+                key={m}
+                onPress={() => {
+                  setMethod(m);
+                  setOpen(false);
+                }}
+                style={styles.menuItem}>
+                <Text style={styles.menuText}>{m}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
-        {/* Conditional fields */}
-        {method === 'UPI' && (
-          <View style={[styles.inputRow, styles.inputField]}>
-            <MaterialIcons
-              name="account-balance-wallet"
-              size={24}
-              color={colors.primary}
-            />
+        {method === 'UPI' ? (
+          <FieldRow icon="account-balance-wallet">
             <TextInput
               style={styles.input}
-              value={contact.upi || ''}
+              value={contact.upi ?? ''}
               editable={false}
               placeholder="No UPI ID"
               placeholderTextColor="#888"
             />
-          </View>
-        )}
-        {method === 'Bank' && (
+          </FieldRow>
+        ) : (
           <>
-            <View style={[styles.inputRow, styles.inputField]}>
-              <MaterialIcons
-                name="account-balance"
-                size={24}
-                color={colors.primary}
-              />
+            <FieldRow icon="account-balance">
               <TextInput
                 style={styles.input}
-                value={contact.accountNumber || ''}
+                value={contact.accountNumber ?? ''}
                 editable={false}
-                placeholder="No account number"
+                placeholder="No account"
                 placeholderTextColor="#888"
               />
-            </View>
-            <View style={[styles.inputRow, styles.inputField]}>
-              <MaterialIcons name="info" size={24} color={colors.primary} />
+            </FieldRow>
+            <FieldRow icon="info">
               <TextInput
                 style={styles.input}
-                value={contact.ifsc || ''}
+                value={contact.ifsc ?? ''}
                 editable={false}
                 placeholder="No IFSC"
                 placeholderTextColor="#888"
               />
-            </View>
+            </FieldRow>
           </>
         )}
 
-        {/* Amount Input */}
-        <View style={[styles.inputRow, styles.inputField]}>
-          <MaterialIcons name="attach-money" size={24} color={colors.primary} />
+        <FieldRow icon="attach-money">
           <TextInput
             style={styles.input}
             placeholder="Amount"
@@ -171,11 +165,9 @@ const PayScreen: FC<Props> = ({route, navigation}) => {
             onChangeText={setAmount}
             placeholderTextColor="#888"
           />
-        </View>
+        </FieldRow>
 
-        {/* Remark Input */}
-        <View style={[styles.inputRow, styles.inputField, styles.textAreaRow]}>
-          <MaterialIcons name="note" size={24} color={colors.primary} />
+        <FieldRow icon="note" style={styles.textAreaRow}>
           <TextInput
             style={[styles.input, styles.textArea]}
             placeholder="Remark (optional)"
@@ -184,21 +176,19 @@ const PayScreen: FC<Props> = ({route, navigation}) => {
             multiline
             placeholderTextColor="#888"
           />
-        </View>
+        </FieldRow>
       </View>
 
-      {/* Pay Button */}
-      <Animated.View
-        style={[styles.payContainer, {transform: [{scale: btnScale}]}]}>
+      <Animated.View style={[styles.buttonWrap, {transform: [{scale}]}]}>
         <TouchableOpacity
           activeOpacity={0.8}
-          onPressIn={onPressIn}
-          onPressOut={onPressOut}
+          onPressIn={() => animate(0.95)}
+          onPressOut={() => animate(1)}
           onPress={handlePay}>
           <LinearGradient
             colors={[colors.primaryDark, colors.primary]}
-            style={styles.payButton}>
-            <Text style={styles.payText}>Pay Now</Text>
+            style={styles.button}>
+            <Text style={styles.buttonText}>Pay Now</Text>
           </LinearGradient>
         </TouchableOpacity>
       </Animated.View>
@@ -206,19 +196,11 @@ const PayScreen: FC<Props> = ({route, navigation}) => {
   );
 };
 
+export default PayScreen;
+
 const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: colors.bgLight},
-
-  profileCard: {
-    backgroundColor: colors.white,
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 16,
-    alignItems: 'center',
-    paddingTop: AVATAR_SIZE / 2 + 16,
-    paddingBottom: 24,
-    elevation: 2,
-  },
+  profile: {alignItems: 'center', marginTop: responsiveHeight(2)},
   avatar: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
@@ -226,120 +208,86 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'absolute',
-    top: -AVATAR_SIZE / 2,
+    marginBottom: responsiveHeight(1),
     elevation: 3,
   },
   initials: {
+    fontSize: responsiveFontSize(4),
     color: colors.white,
-    fontSize: 28,
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: fonts.bold,
   },
   name: {
-    fontSize: 20,
-    fontFamily: 'Montserrat-Medium',
+    fontSize: responsiveFontSize(2.25),
+    fontFamily: fonts.medium,
     color: colors.primaryDark,
-    marginTop: 8,
   },
   mobile: {
-    fontSize: 14,
-    fontFamily: 'Montserrat-Regular',
+    fontSize: responsiveFontSize(1.75),
+    fontFamily: fonts.regular,
     color: '#666',
-    marginTop: 4,
+    marginTop: responsiveHeight(0.5),
   },
-
-  form: {
-    marginTop: 24,
-    paddingHorizontal: 16,
-    zIndex: 1,
+  form: {paddingHorizontal: responsiveWidth(4), marginTop: responsiveHeight(2)},
+  dropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: responsiveWidth(2),
+    padding: responsiveWidth(3),
+    marginBottom: responsiveHeight(1.5),
   },
-  dropdownWrapper: {
-    marginBottom: 16,
-    zIndex: 10,
+  dropdownText: {
+    flex: 1,
+    fontSize: responsiveFontSize(2),
+    color: colors.primaryDark,
+    fontFamily: fonts.regular,
+  },
+  menu: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: responsiveWidth(2),
+    overflow: 'hidden',
+    marginBottom: responsiveHeight(1.5),
+  },
+  menuItem: {padding: responsiveWidth(3)},
+  menuText: {
+    fontSize: responsiveFontSize(2),
+    color: colors.primaryDark,
+    fontFamily: fonts.regular,
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 16,
+    borderRadius: responsiveWidth(2),
+    padding: responsiveWidth(3),
+    marginBottom: responsiveHeight(1.5),
     elevation: 1,
   },
-  dropdownInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    paddingVertical: 10,
-    justifyContent: 'space-between',
-  },
-  inputText: {
-    flex: 1,
-    fontFamily: 'Montserrat-Regular',
-    fontSize: 16,
-    color: colors.primaryDark,
-  },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 52,
-    left: 0,
-    right: 0,
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    zIndex: 20,
-  },
-  dropdownItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  dropdownItemText: {
-    fontFamily: 'Montserrat-Regular',
-    fontSize: 16,
-    color: colors.primaryDark,
-  },
-
-  inputField: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    paddingVertical: 12,
-  },
-  textAreaRow: {
-    alignItems: 'flex-start',
-  },
+  textAreaRow: {alignItems: 'flex-start'},
   input: {
     flex: 1,
-    marginLeft: 12,
-    fontFamily: 'Montserrat-Regular',
-    fontSize: 16,
+    marginLeft: responsiveWidth(2),
+    fontSize: responsiveFontSize(2),
+    fontFamily: fonts.regular,
     color: '#333',
   },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-
-  payContainer: {
+  textArea: {height: responsiveHeight(10), textAlignVertical: 'top'},
+  buttonWrap: {
     marginTop: 'auto',
-    marginHorizontal: 16,
-    marginBottom: 32,
+    marginHorizontal: responsiveWidth(4),
+    marginBottom: responsiveHeight(4),
   },
-  payButton: {
-    paddingVertical: 16,
-    borderRadius: 8,
+  button: {
+    paddingVertical: responsiveHeight(1.5),
+    borderRadius: responsiveWidth(2),
     alignItems: 'center',
-    shadowColor: colors.primaryDark,
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
     elevation: 6,
   },
-  payText: {
+  buttonText: {
     color: colors.white,
-    fontFamily: 'Montserrat-SemiBold',
-    fontSize: 16,
+    fontSize: responsiveFontSize(2.25),
+    fontFamily: fonts.medium,
   },
 });
-
-export default PayScreen;

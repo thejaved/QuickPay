@@ -1,30 +1,23 @@
 import React, {useEffect, useRef} from 'react';
+import {View, StyleSheet, Image, StatusBar, Animated} from 'react-native';
 import {
-  View,
-  StyleSheet,
-  Image,
-  StatusBar,
-  Dimensions,
-  Animated,
-} from 'react-native';
+  responsiveWidth,
+  responsiveHeight,
+} from 'react-native-responsive-dimensions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {CommonActions, useNavigation} from '@react-navigation/native';
 
 import colors from '../config/colors';
 
-const {width, height} = Dimensions.get('window');
-
 export default function SplashScreen() {
   const navigation = useNavigation();
 
-  // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Logo fade + scale
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -38,7 +31,6 @@ export default function SplashScreen() {
       }),
     ]).start();
 
-    // Pulse animation for loader
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
@@ -54,7 +46,6 @@ export default function SplashScreen() {
       ]),
     ).start();
 
-    // Check token and navigate after splash
     const checkToken = async () => {
       const token = await AsyncStorage.getItem('userToken').catch(() => null);
       timeoutRef.current = setTimeout(() => {
@@ -73,7 +64,6 @@ export default function SplashScreen() {
     };
   }, [fadeAnim, scaleAnim, pulseAnim, navigation]);
 
-  // Pulse interpolation
   const pulseScale = pulseAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [1, 1.3],
@@ -121,16 +111,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoContainer: {
-    marginBottom: 30,
+    marginBottom: responsiveHeight(4),
   },
   logo: {
-    width: width * 0.6,
-    height: height * 0.25,
+    width: responsiveWidth(60),
+    height: responsiveHeight(25),
   },
   pulse: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: responsiveWidth(5),
+    height: responsiveWidth(5),
+    borderRadius: responsiveWidth(2.5),
     backgroundColor: colors.primary,
   },
 });

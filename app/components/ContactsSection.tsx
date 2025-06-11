@@ -6,16 +6,19 @@ import {
   TouchableOpacity,
   FlatList,
   ListRenderItemInfo,
-  Dimensions,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {
+  responsiveWidth,
+  responsiveHeight,
+  responsiveFontSize,
+} from 'react-native-responsive-dimensions';
 import colors from '../config/colors';
 import ContactCard, {Contact} from './ContactCard';
 import fonts from '../config/fonts';
 
-const {width} = Dimensions.get('window');
-const CARD_WIDTH = width * 0.9; // same as expense cards
-const VERTICAL_GUTTER = 12;
+const CARD_WIDTH = responsiveWidth(90);
+const VERTICAL_GUTTER = responsiveHeight(1.5);
 
 interface Props {
   contacts: Contact[];
@@ -41,7 +44,7 @@ const ContactsSection: FC<Props> = ({contacts, onViewAll, onPay}) => {
         <TouchableOpacity onPress={onViewAll} style={styles.headerButton}>
           <MaterialIcons
             name="add-circle-outline"
-            size={20}
+            size={responsiveFontSize(2.5)}
             color={colors.primary}
           />
           <Text style={styles.headerButtonText}>
@@ -72,7 +75,7 @@ export default ContactsSection;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 24,
+    marginTop: responsiveHeight(3),
     alignItems: 'center',
   },
   headerRow: {
@@ -83,7 +86,7 @@ const styles = StyleSheet.create({
     marginBottom: VERTICAL_GUTTER,
   },
   header: {
-    fontSize: 20,
+    fontSize: responsiveFontSize(2.5),
     fontFamily: fonts.medium,
     color: colors.primaryDark,
   },
@@ -92,7 +95,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerButtonText: {
-    marginLeft: 4,
+    marginLeft: responsiveWidth(1),
+    fontSize: responsiveFontSize(2),
     color: colors.primary,
     fontFamily: fonts.medium,
   },
@@ -100,7 +104,8 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: '#666',
     textAlign: 'center',
-    paddingVertical: 20,
+    paddingVertical: responsiveHeight(2.5),
     fontFamily: fonts.regular,
+    fontSize: responsiveFontSize(1.75),
   },
 });

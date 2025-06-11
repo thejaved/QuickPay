@@ -4,18 +4,22 @@ import {
   Text,
   StyleSheet,
   Animated,
-  Dimensions,
   Easing,
   Pressable,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {
+  responsiveWidth,
+  responsiveHeight,
+  responsiveFontSize,
+} from 'react-native-responsive-dimensions';
+
 import colors from '../config/colors';
 import fonts from '../config/fonts';
 
-const {width} = Dimensions.get('window');
-export const CARD_WIDTH = width * 0.9;
-export const CARD_HEIGHT = 160;
+export const CARD_WIDTH = responsiveWidth(90);
+export const CARD_HEIGHT = responsiveHeight(20);
 
 export interface ExpenseCardProps {
   title: string;
@@ -40,7 +44,6 @@ const ExpenseCard: FC<ExpenseCardProps> = ({
   const [displayValue, setDisplayValue] = useState(0);
 
   useEffect(() => {
-    // fill bar animation
     Animated.timing(fillAnim, {
       toValue: (value / max) * 100,
       duration: 800,
@@ -48,10 +51,7 @@ const ExpenseCard: FC<ExpenseCardProps> = ({
       useNativeDriver: false,
     }).start();
 
-    // count up listener
-    countAnim.addListener(({value: v}) => {
-      setDisplayValue(Math.floor(v));
-    });
+    countAnim.addListener(({value: v}) => setDisplayValue(Math.floor(v)));
     Animated.timing(countAnim, {
       toValue: value,
       duration: 800,
@@ -77,7 +77,7 @@ const ExpenseCard: FC<ExpenseCardProps> = ({
 
   const translateY = scrollY.interpolate({
     inputRange: [-1, 0, CARD_HEIGHT * index, CARD_HEIGHT * (index + 2)],
-    outputRange: [0, 0, 0, -30],
+    outputRange: [0, 0, 0, -responsiveHeight(4)],
   });
 
   const tiltInterpolate = tilt.interpolate({
@@ -99,7 +99,11 @@ const ExpenseCard: FC<ExpenseCardProps> = ({
       <Pressable onPressIn={onPressIn} onPressOut={onPressOut}>
         <View style={styles.iconHeader}>
           <View style={styles.iconCircle}>
-            <MaterialIcons name={icon} size={28} color={colors.white} />
+            <MaterialIcons
+              name={icon}
+              size={responsiveFontSize(3)}
+              color={colors.white}
+            />
           </View>
         </View>
 
@@ -129,9 +133,9 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
     backgroundColor: colors.white,
-    borderRadius: 20,
-    padding: 16,
-    marginVertical: 12,
+    borderRadius: responsiveWidth(5),
+    padding: responsiveWidth(4),
+    marginVertical: responsiveHeight(1.5),
     borderColor: colors.lightGray,
     borderWidth: 1,
   },
@@ -140,26 +144,26 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: responsiveWidth(13),
+    height: responsiveWidth(13),
+    borderRadius: responsiveWidth(6.5),
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: 18,
+    fontSize: responsiveFontSize(2.5),
     fontWeight: '600',
     color: colors.primaryDark,
-    marginTop: 12,
+    marginTop: responsiveHeight(1.5),
     fontFamily: fonts.regular,
   },
   barBackground: {
-    marginTop: 12,
+    marginTop: responsiveHeight(1.5),
     width: '100%',
-    height: 12,
+    height: responsiveHeight(1.5),
     backgroundColor: '#eee',
-    borderRadius: 6,
+    borderRadius: responsiveHeight(0.75),
     overflow: 'hidden',
   },
   barFillContainer: {
@@ -167,13 +171,13 @@ const styles = StyleSheet.create({
   },
   barFill: {
     flex: 1,
-    borderRadius: 6,
+    borderRadius: responsiveHeight(0.75),
   },
   value: {
     position: 'absolute',
-    top: 16,
-    right: 16,
-    fontSize: 24,
+    top: responsiveHeight(2),
+    right: responsiveWidth(4),
+    fontSize: responsiveFontSize(3.5),
     color: colors.secondary,
     fontFamily: fonts.medium,
   },

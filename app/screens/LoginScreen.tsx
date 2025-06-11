@@ -6,10 +6,14 @@ import {
   Image,
   TouchableOpacity,
   StatusBar,
-  Dimensions,
   Animated,
   Easing,
 } from 'react-native';
+import {
+  responsiveWidth,
+  responsiveHeight,
+  responsiveFontSize,
+} from 'react-native-responsive-dimensions';
 import {
   GoogleSignin,
   statusCodes,
@@ -20,7 +24,6 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import colors from '../config/colors';
 import fonts from '../config/fonts';
 
-// Navigation param list
 export type RootStackParamList = {
   Login: undefined;
   BottomTabs: undefined;
@@ -31,26 +34,18 @@ type LoginScreenNavProp = NativeStackNavigationProp<
   'Login'
 >;
 
-const {width} = Dimensions.get('window');
-const LOGO_SIZE = width * 0.4;
-const BUTTON_HEIGHT = 50;
-const BUTTON_RADIUS = BUTTON_HEIGHT / 2;
-
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavProp>();
 
-  // Animation refs
   const logoScale = useRef(new Animated.Value(0)).current;
   const buttonOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Configure Google Sign-In
     GoogleSignin.configure({
       webClientId: 'YOUR_WEB_CLIENT_ID',
       offlineAccess: false,
     });
 
-    // Animate logo and button
     Animated.sequence([
       Animated.timing(logoScale, {
         toValue: 1,
@@ -64,15 +59,10 @@ const LoginScreen: React.FC = () => {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [logoScale, buttonOpacity, navigation]);
+  }, [logoScale, buttonOpacity]);
 
   const onGooglePress = async () => {
     try {
-      //   await GoogleSignin.hasPlayServices();
-      //   const res = await GoogleSignin.signIn();
-
-      //   console.log('res', res);
-      // TODO: Send idToken to backend
       navigation.reset({index: 0, routes: [{name: 'BottomTabs'}]});
     } catch (err: any) {
       switch (err.code) {
@@ -98,22 +88,23 @@ const LoginScreen: React.FC = () => {
         backgroundColor={colors.white}
         animated
       />
-
       <Animated.Image
         source={require('../assets/images/logo.png')}
         style={[styles.logo, {transform: [{scale: logoScale}]}]}
         resizeMode="contain"
       />
-
       <Text style={styles.title}>Welcome to QuickPay</Text>
       <Text style={styles.subtitle}>Fast. Secure. Everywhere.</Text>
-
       <Animated.View style={{opacity: buttonOpacity}}>
         <TouchableOpacity
           style={styles.googleButton}
           onPress={onGooglePress}
           activeOpacity={0.7}>
-          <AntDesign name="google" size={24} color={colors.primary} />
+          <AntDesign
+            name="google"
+            size={responsiveFontSize(2.5)}
+            color={colors.primary}
+          />
           <Text style={styles.googleText}>Login with Google</Text>
         </TouchableOpacity>
       </Animated.View>
@@ -129,26 +120,26 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: responsiveWidth(6),
   },
   logo: {
-    width: LOGO_SIZE,
-    height: LOGO_SIZE,
-    marginBottom: 32,
+    width: responsiveWidth(40),
+    height: responsiveWidth(40),
+    marginBottom: responsiveHeight(4),
   },
   title: {
-    fontSize: 28,
+    fontSize: responsiveFontSize(2.5),
     fontFamily: fonts.medium,
     color: colors.primary,
-    marginBottom: 8,
+    marginBottom: responsiveHeight(1),
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: responsiveFontSize(1.75),
     color: colors.textSecondary,
     fontFamily: fonts.regular,
     textAlign: 'center',
-    marginBottom: 40,
-    lineHeight: 22,
+    marginBottom: responsiveHeight(5),
+    lineHeight: responsiveFontSize(2.75),
   },
   googleButton: {
     flexDirection: 'row',
@@ -157,14 +148,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#dadce0',
-    borderRadius: BUTTON_RADIUS,
-    height: BUTTON_HEIGHT,
-    width: width * 0.8,
-    paddingHorizontal: 16,
+    borderRadius: responsiveHeight(3),
+    height: responsiveHeight(6),
+    width: responsiveWidth(80),
+    paddingHorizontal: responsiveWidth(4),
   },
   googleText: {
-    marginLeft: 12,
-    fontSize: 16,
+    marginLeft: responsiveWidth(3),
+    fontSize: responsiveFontSize(2),
     fontWeight: '500',
     color: '#3c4043',
     fontFamily: fonts.regular,

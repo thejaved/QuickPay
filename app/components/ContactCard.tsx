@@ -1,14 +1,13 @@
 import React, {FC, useRef} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  Animated,
-  Platform,
-} from 'react-native';
+import {View, Text, StyleSheet, Pressable, Animated} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import LinearGradient from 'react-native-linear-gradient';
+import {
+  responsiveWidth,
+  responsiveHeight,
+  responsiveFontSize,
+} from 'react-native-responsive-dimensions';
+
 import colors from '../config/colors';
 import fonts from '../config/fonts';
 
@@ -60,12 +59,18 @@ const ContactCard: FC<Props> = ({contact, onPay, style}) => {
           style={styles.avatar}>
           <Text style={styles.initials}>{getInitials(contact.name)}</Text>
         </LinearGradient>
+
         <View style={styles.info}>
           <Text style={styles.name}>{contact.name}</Text>
           <Text style={styles.mobile}>{contact.mobile}</Text>
         </View>
+
         <View style={styles.iconWrapper}>
-          <AntDesign name="arrowright" size={18} color={colors.white} />
+          <AntDesign
+            name="arrowright"
+            size={responsiveFontSize(2.5)}
+            color={colors.white}
+          />
         </View>
       </Pressable>
     </Animated.View>
@@ -79,41 +84,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: responsiveWidth(4),
+    padding: responsiveWidth(4),
     borderColor: colors.lightGray,
     borderWidth: 1,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: responsiveWidth(12),
+    height: responsiveWidth(12),
+    borderRadius: responsiveWidth(6),
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: responsiveWidth(3),
   },
   initials: {
     color: colors.white,
     fontFamily: fonts.bold,
+    fontSize: responsiveFontSize(2.5),
   },
   info: {
     flex: 1,
   },
   name: {
-    fontSize: 16,
+    fontSize: responsiveFontSize(2),
     fontFamily: fonts.medium,
     color: colors.primaryDark,
     textTransform: 'capitalize',
   },
   mobile: {
-    fontSize: 14,
+    fontSize: responsiveFontSize(1.75),
     color: '#666',
-    marginTop: 4,
+    marginTop: responsiveHeight(0.5),
     fontFamily: fonts.regular,
   },
   iconWrapper: {
     backgroundColor: colors.primary,
-    padding: 6,
-    borderRadius: 12,
+    padding: responsiveWidth(2),
+    borderRadius: responsiveWidth(3),
   },
 });
